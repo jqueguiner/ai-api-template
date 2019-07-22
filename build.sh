@@ -8,7 +8,7 @@ replace_in_file(){
                 replace_char_separator="/"
         fi;
 
-        if [ "$file" = "Mac" ]; then
+        if [ "$MACHINE" = "Mac" ]; then
                 sed -i '' "s${replace_char_separator}${look_for}${replace_char_separator}${replace_with}${replace_char_separator}g" $file
         else
                 sed -i "s${replace_char_separator}${look_for}${replace_char_separator}${replace_with}${replace_char_separatorg}g" $file
