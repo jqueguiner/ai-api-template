@@ -79,6 +79,7 @@ case $interactive in
 	[yYoO]*)
 		echo "Running in interactive mode"
 		replace_in_file $dockerfile "ENTRYPOINT" "#ENTRYPOINT"
+		replace_in_file $dockerfile "CMD" "#CMD"
     		;;
 	*)   
 		replace_in_file $dockerfile "#ENTRYPOINT" "ENTRYPOINT"
