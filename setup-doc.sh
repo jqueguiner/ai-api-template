@@ -1,6 +1,7 @@
 
 main(){
 	reset
+	get_current_machine
 	get_current_dir
 	welcome_message
 	init_env
@@ -21,6 +22,35 @@ main(){
 	reset
 }
 
+replace_in_file(){
+	file=$1
+	look_for=$2
+	replace_with=$3
+	replace_char_separator=$4
+
+	if [ "$replace_char_separator" = "" ]; then
+		replace_char_separator="/"
+	fi;
+
+	if [ "$file" = "Mac" ]; then 
+		sed -i '' "s$replace_char_separator$look_for$replace_char_separator$replace_with/g" $file		
+	else
+		sed -i "s$replace_char_separator$look_for$replace_char_separator$replace_with$replace_char_separatorg" $file
+	fi;
+}
+
+get_current_machine(){
+	unameOut="$(uname -s)"
+	case "${unameOut}" in
+		Linux*)     machine=Linux;;
+		Darwin*)    machine=Mac;;
+		CYGWIN*)    machine=Cygwin;;
+		MINGW*)     machine=MinGw;;
+		*)          machine="UNKNOWN:${unameOut}"
+	esac
+	MACHINE=${machine}
+	echo ${machine}
+}
 
 get_current_dir(){
 	CURRENT_DIR="${PWD##*/}"
@@ -42,13 +72,10 @@ init_env(){
 	cp README_TEMPLATE.md $README
 	cp swagger_template.json $SWAGGER
 
-	REPO=$(echo "https://"$(echo $(git remote show origin) | egrep -o "(github\.com..*) URL") | sed "s/com:/com\//g")
+	REPO=$(echo "https://"$(echo $(git remote show origin) | egrep -o "(github\.com..*) URL") | sed "s/com:/com\//g" | egrep -o 'https?://[^ ]+')".git"
 
 	REPO=${REPO%????}
 	REPO_NO_GIT=${REPO%????}
-
-	REPO=$REPO
-	REPO_NO_GIT=$REPO_NO_GIT
 
 	DOCUMENTATION=$DOCS_FOLDER'/DOCUMENTATION.md'
 	README=$DOCS_FOLDER'/README.md'
@@ -88,10 +115,11 @@ setup_service(){
 	NB_INPUT_FIELDS=$(echo "$VALUES" | sed -n 5p)
 	NB_OUTPUT_FIELDS=$(echo "$VALUES" | sed -n 6p)
 
-	sed -i '' "s/LONG_DESCRIPTION_OF_THE_SERVICE/$LONG_DESCRIPTION_OF_THE_SERVICE/g" $SWAGGER
-	sed -i '' "s/SHORT_DESCRIPTION_OF_THE_SERVICE/$SHORT_DESCRIPTION_OF_THE_SERVICE/g" $SWAGGER
-	sed -i '' "s/TITLE_OF_THE_SERVICE/$TITLE_OF_THE_SERVICE/g" $SWAGGER
-	sed -i '' "s/API_RESTPOINT_OPERATION/$API_RESTPOINT_OPERATION/g" $SWAGGER
+	replace_in_file $SWAGGER "LONG_DESCRIPTION_OF_THE_SERVICE" $LONG_DESCRIPTION_OF_THE_SERVICE
+	replace_in_file $SWAGGER "SHORT_DESCRIPTION_OF_THE_SERVICE" $SHORT_DESCRIPTION_OF_THE_SERVICE
+	replace_in_file $SWAGGER "TITLE_OF_THE_SERVICE" $TITLE_OF_THE_SERVICE
+	replace_in_file $SWAGGER "API_RESTPOINT_OPERATION" $API_RESTPOINT_OPERATION
+
 }
 
 get_field_type(){
@@ -229,29 +257,29 @@ setup_header_type(){
 	exec 3>&-
 
 	case $HEADER_TYPE in
-	  application_json) HEADER_TYPE="application\/json";;
-	  application_xml) HEADER_TYPE="application\/xml";;
-	  text_html) HEADER_TYPE="text\/html";;
-	  text_csv) HEADER_TYPE="text\/csv";;
-	  text_plain) HEADER_TYPE="text\/plain";;
-	  image) HEADER_TYPE="image\/\*";;
-	  image_bmp) HEADER_TYPE="image\/bmp";;
-	  image_gif) HEADER_TYPE="image\/gif";;
-	  image_jpeg) HEADER_TYPE="image\/jpeg";;
-	  image_png) HEADER_TYPE="image\/png ";;
-	  audio_gpp) HEADER_TYPE="audio\/3gpp";;
-	  audio_midi) HEADER_TYPE="audio\/midi";;
-	  audio_mpeg) HEADER_TYPE="audio\/mpeg";;
-	  audio_mp4) HEADER_TYPE="audio\/mp4";;
-	  audio_wave) HEADER_TYPE="audio\/wav";;
-	  audio_xwave) HEADER_TYPE="audio\/x-wav";;
-	  video_gpp) HEADER_TYPE="video\/3gpp";;
-	  video_mp4) HEADER_TYPE="video\/mp4";;
+		application_json)	HEADER_TYPE="application\/json";;
+		application_xml)	HEADER_TYPE="application\/xml";;
+		text_html)		HEADER_TYPE="text\/html";;
+		text_csv)		HEADER_TYPE="text\/csv";;
+		text_plain)		HEADER_TYPE="text\/plain";;
+		image)			HEADER_TYPE="image\/\*";;
+		image_bmp)		HEADER_TYPE="image\/bmp";;
+		image_gif)		HEADER_TYPE="image\/gif";;
+		image_jpeg)		HEADER_TYPE="image\/jpeg";;
+		image_png)		HEADER_TYPE="image\/png ";;
+		audio_gpp)		HEADER_TYPE="audio\/3gpp";;
+		audio_midi)		HEADER_TYPE="audio\/midi";;
+		audio_mpeg)		HEADER_TYPE="audio\/mpeg";;
+		audio_mp4)		HEADER_TYPE="audio\/mp4";;
+		audio_wave)		HEADER_TYPE="audio\/wav";;
+		audio_xwave)		HEADER_TYPE="audio\/x-wav";;
+		video_gpp)		HEADER_TYPE="video\/3gpp";;
+		video_mp4)		HEADER_TYPE="video\/mp4";;
 	esac
 
 	case $HEADER in
-		Content-Type) CONTENT_TYPE=$HEADER_TYPE;;
-		Accept) ACCEPT_TYPE=$HEADER_TYPE;;
+		Content-Type)	CONTENT_TYPE=$HEADER_TYPE;;
+		Accept)		ACCEPT_TYPE=$HEADER_TYPE;;
 	esac
 }
 
@@ -305,11 +333,11 @@ build_input_fields(){
 		FIELD_EXAMPLE=$(echo "$VALUES" | sed -n 3p)
 		
 		case $FIELD_TYPE in
-		  number_float) FIELD_FORMAT='"format":"float",'; FIELD_TYPE="number";;
-		  number_double) FIELD_FORMAT='"format":"double",'; FIELD_TYPE="number";;
-		  integer_int32) FIELD_FORMAT='"format":"int32",'; FIELD_TYPE="integer";;
-		  integer_int64) FIELD_FORMAT='"format":"int64",'; FIELD_TYPE="integer";;
-		  *) FIELD_FORMAT="";;
+			number_float)	FIELD_FORMAT='"format":"float",'; FIELD_TYPE="number";;
+			number_double)	FIELD_FORMAT='"format":"double",'; FIELD_TYPE="number";;
+			integer_int32)	FIELD_FORMAT='"format":"int32",'; FIELD_TYPE="integer";;
+			integer_int64)	FIELD_FORMAT='"format":"int64",'; FIELD_TYPE="integer";;
+			*)		FIELD_FORMAT="";;
 		esac
 
 		REQUIRED="$REQUIRED\"$FIELD_KEY\","
@@ -324,7 +352,7 @@ build_input_fields(){
 	CURL_DATA="{$CURL_DATA}"
 	SCHEMA='"Body":{"type":"object","required":['$REQUIRED'],"properties":{'$PROPERTIES'}'
 
-	sed -i '' "s!SCHEMA!$SCHEMA!g" $SWAGGER
+	replace_in_file $SWAGGER "SCHEMA" $SCHEMA "!"
 }
 
 build_output_fields(){
@@ -372,11 +400,11 @@ build_output_fields(){
 		FIELD_EXAMPLE=$(echo "$VALUES" | sed -n 3p)
 
 		case $FIELD_TYPE in
-		  number_float) FIELD_FORMAT='"format":"float",'; FIELD_TYPE="number";;
-		  number_double) FIELD_FORMAT='"format":"double",'; FIELD_TYPE="number";;
-		  integer_int32) FIELD_FORMAT='"format":"int32",'; FIELD_TYPE="integer";;
-		  integer_int64) FIELD_FORMAT='"format":"int64",'; FIELD_TYPE="integer";;
-	  	  *) FIELD_FORMAT="";;
+			number_float)	FIELD_FORMAT='"format":"float",'; FIELD_TYPE="number";;
+			number_double)	FIELD_FORMAT='"format":"double",'; FIELD_TYPE="number";;
+			integer_int32)	FIELD_FORMAT='"format":"int32",'; FIELD_TYPE="integer";;
+			integer_int64)	FIELD_FORMAT='"format":"int64",'; FIELD_TYPE="integer";;
+			*)		FIELD_FORMAT="";;
 		esac
 
 
@@ -388,7 +416,7 @@ build_output_fields(){
 	OUTPUT_EXAMPLE=$(echo $OUTPUT_EXAMPLE | sed 's/.$//')
 	OUTPUT_EXAMPLE=$(echo "[{$OUTPUT_EXAMPLE}]" | python -m json.tool)
 
-	sed -i '' "s!RESPONSE_PROPERTIES!$RESPONSE_PROPERTIES!g" $SWAGGER
+	replace_in_file $SWAGGER "RESPONSE_PROPERTIES" $RESPONSE_PROPERTIES
 }
 
 format_json_file(){
@@ -400,11 +428,11 @@ format_json_file(){
 
 
 create_readme(){
-	sed -i '' "s/REPO_NAME/$current_dir/g" $README
-	sed -i '' "s/REPO/$REPO/g" $README
+	replace_in_file $README "REPO" $REPO
+	replace_in_file $README "REPO_NAME" $REPO_NAME
 
 	CALL="curl -X POST \"http:\\/\\/MY_SUPER_API_IP:5000\\/$API_RESTPOINT_OPERATION\" -H \"accept: $ACCEPT_TYPE\" -H \"Content-Type: $CONTENT_TYPE\" -d '$CURL_DATA'"
-	sed -i '' "s!CALL!$CALL!g" $README
+	replace_in_file $README "CALL" $CALL "!"
 }
 
 create_main_documentation(){
@@ -412,18 +440,19 @@ create_main_documentation(){
 	CALL_MARKETPLACE="curl -X POST \"https:\\/\\/api-market-place.ai.ovh.net\\/'$API_CATEGORY'-'$CURRENT_DIR'/$API_RESTPOINT_OPERATION\" -H \"accept: $ACCEPT_TYPE\" -H \"X-OVH-Api-Key: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX\" -H \"Content-Type: $CONTENT_TYPE\" -d '$CURL_DATA'"
 	CURL_DATA_FORMATTED=$(echo $CURL_DATA | python -m json.tool)
 	
-	sed -i '' "s!CURL_DATA_FORMATTED!$CURL_DATA_FORMATTED!g" $DOCUMENTATION
-	sed -i '' "s!CALL_MARKETPLACE!$CALL_MARKETPLACE!g" $DOCUMENTATION
-	sed -i '' "s!LONG_DESCRIPTION_OF_THE_SERVICE!$LONG_DESCRIPTION_OF_THE_SERVICE!g" $DOCUMENTATION
+	replace_in_file $DOCUMENTATION "CURL_DATA_FORMATTED" $CURL_DATA_FORMATTED "!"
+	replace_in_file $DOCUMENTATION "CALL_MARKETPLACE" $CALL_MARKETPLACE "!"
+	replace_in_file $DOCUMENTATION "LONG_DESCRIPTION_OF_THE_SERVICE" $LONG_DESCRIPTION_OF_THE_SERVICE "!"
 
 	#TO BE IMPLEMENTED
 	case $ACCEPT_TYPE in
-	  image*) OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE image binary";;
-	  audio*) OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE audio binary";;
-	  video*) OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE video binary";;
-	  *) OUTPUT_EXAMPLE="";;
+		image*)	OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE image binary";;
+		audio*)	OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE audio binary";;
+		video*)	OUTPUT_EXAMPLE="The provided $ACCEPT_TYPE video binary";;
+		*)	OUTPUT_EXAMPLE="";;
 	esac
-	sed -i '' "s!OUTPUT_EXAMPLE!$OUTPUT_EXAMPLE!g" $DOCUMENTATION
+
+	replace_in_file $DOCUMENTATION "OUTPUT_EXAMPLE" $OUTPUT_EXAMPLE "!"
 }
 
 main
