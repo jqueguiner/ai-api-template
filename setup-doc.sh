@@ -3,8 +3,8 @@ main(){
 	reset
 	get_current_machine
 	get_current_dir
-	welcome_message
 	init_env
+	welcome_message
 	setup_service
 	setup_api_category
 
@@ -35,7 +35,7 @@ replace_in_file(){
 	if [ "$file" = "Mac" ]; then 
 		sed -i '' "s$replace_char_separator$look_for$replace_char_separator$replace_with/g" $file		
 	else
-		sed -i "s$replace_char_separator$look_for$replace_char_separator$replace_with$replace_char_separatorg" $file
+		sed -i "s$replace_char_separator$look_for$replace_char_separator$replace_with$replace_char_separatorg/g" $file
 	fi;
 }
 
@@ -49,7 +49,6 @@ get_current_machine(){
 		*)          machine="UNKNOWN:${unameOut}"
 	esac
 	MACHINE=${machine}
-	echo ${machine}
 }
 
 get_current_dir(){
@@ -107,7 +106,6 @@ setup_service(){
 			"number of output fields:"     6 1	"1" 	6 25 80 0 \
 			2>&1 1>&3)
 	exec 3>&-
-
 	TITLE_OF_THE_SERVICE=$(echo "$VALUES" | sed -n 1p)
 	SHORT_DESCRIPTION_OF_THE_SERVICE=$(echo "$VALUES" | sed -n 2p)
 	LONG_DESCRIPTION_OF_THE_SERVICE=$(echo "$VALUES" | sed -n 3p)
@@ -115,10 +113,10 @@ setup_service(){
 	NB_INPUT_FIELDS=$(echo "$VALUES" | sed -n 5p)
 	NB_OUTPUT_FIELDS=$(echo "$VALUES" | sed -n 6p)
 
-	replace_in_file $SWAGGER "LONG_DESCRIPTION_OF_THE_SERVICE" $LONG_DESCRIPTION_OF_THE_SERVICE
-	replace_in_file $SWAGGER "SHORT_DESCRIPTION_OF_THE_SERVICE" $SHORT_DESCRIPTION_OF_THE_SERVICE
-	replace_in_file $SWAGGER "TITLE_OF_THE_SERVICE" $TITLE_OF_THE_SERVICE
-	replace_in_file $SWAGGER "API_RESTPOINT_OPERATION" $API_RESTPOINT_OPERATION
+	replace_in_file $SWAGGER "TITLE_OF_THE_SERVICE" "$TITLE_OF_THE_SERVICE"
+	replace_in_file $SWAGGER "SHORT_DESCRIPTION_OF_THE_SERVICE" "$SHORT_DESCRIPTION_OF_THE_SERVICE"
+	replace_in_file $SWAGGER "LONG_DESCRIPTION_OF_THE_SERVICE" "$LONG_DESCRIPTION_OF_THE_SERVICE"
+	replace_in_file $SWAGGER "API_RESTPOINT_OPERATION" "$API_RESTPOINT_OPERATION"
 
 }
 
@@ -352,7 +350,7 @@ build_input_fields(){
 	CURL_DATA="{$CURL_DATA}"
 	SCHEMA='"Body":{"type":"object","required":['$REQUIRED'],"properties":{'$PROPERTIES'}'
 
-	replace_in_file $SWAGGER "SCHEMA" $SCHEMA "!"
+	replace_in_file $SWAGGER "SCHEMA" "$SCHEMA" "!"
 }
 
 build_output_fields(){
@@ -416,7 +414,7 @@ build_output_fields(){
 	OUTPUT_EXAMPLE=$(echo $OUTPUT_EXAMPLE | sed 's/.$//')
 	OUTPUT_EXAMPLE=$(echo "[{$OUTPUT_EXAMPLE}]" | python -m json.tool)
 
-	replace_in_file $SWAGGER "RESPONSE_PROPERTIES" $RESPONSE_PROPERTIES
+	replace_in_file $SWAGGER "RESPONSE_PROPERTIES" "$RESPONSE_PROPERTIES"
 }
 
 format_json_file(){
@@ -428,11 +426,11 @@ format_json_file(){
 
 
 create_readme(){
-	replace_in_file $README "REPO" $REPO
-	replace_in_file $README "REPO_NAME" $REPO_NAME
+	replace_in_file $README "REPO" "$REPO"
+	replace_in_file $README "REPO_NAME" "$REPO_NAME"
 
 	CALL="curl -X POST \"http:\\/\\/MY_SUPER_API_IP:5000\\/$API_RESTPOINT_OPERATION\" -H \"accept: $ACCEPT_TYPE\" -H \"Content-Type: $CONTENT_TYPE\" -d '$CURL_DATA'"
-	replace_in_file $README "CALL" $CALL "!"
+	replace_in_file $README "CALL" "$CALL" "!"
 }
 
 create_main_documentation(){
@@ -440,9 +438,9 @@ create_main_documentation(){
 	CALL_MARKETPLACE="curl -X POST \"https:\\/\\/api-market-place.ai.ovh.net\\/'$API_CATEGORY'-'$CURRENT_DIR'/$API_RESTPOINT_OPERATION\" -H \"accept: $ACCEPT_TYPE\" -H \"X-OVH-Api-Key: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX\" -H \"Content-Type: $CONTENT_TYPE\" -d '$CURL_DATA'"
 	CURL_DATA_FORMATTED=$(echo $CURL_DATA | python -m json.tool)
 	
-	replace_in_file $DOCUMENTATION "CURL_DATA_FORMATTED" $CURL_DATA_FORMATTED "!"
-	replace_in_file $DOCUMENTATION "CALL_MARKETPLACE" $CALL_MARKETPLACE "!"
-	replace_in_file $DOCUMENTATION "LONG_DESCRIPTION_OF_THE_SERVICE" $LONG_DESCRIPTION_OF_THE_SERVICE "!"
+	replace_in_file $DOCUMENTATION "CURL_DATA_FORMATTED" "$CURL_DATA_FORMATTED" "!"
+	replace_in_file $DOCUMENTATION "CALL_MARKETPLACE" "$CALL_MARKETPLACE" "!"
+	replace_in_file $DOCUMENTATION "LONG_DESCRIPTION_OF_THE_SERVICE" "$LONG_DESCRIPTION_OF_THE_SERVICE" "!"
 
 	#TO BE IMPLEMENTED
 	case $ACCEPT_TYPE in
@@ -452,7 +450,7 @@ create_main_documentation(){
 		*)	OUTPUT_EXAMPLE="";;
 	esac
 
-	replace_in_file $DOCUMENTATION "OUTPUT_EXAMPLE" $OUTPUT_EXAMPLE "!"
+	replace_in_file $DOCUMENTATION "OUTPUT_EXAMPLE" "$OUTPUT_EXAMPLE" "!"
 }
 
 main
