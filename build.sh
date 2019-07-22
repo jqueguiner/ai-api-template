@@ -56,25 +56,25 @@ case $interactive in
     ;;
 esac
 
-
+docker_name=$(echo $current_dir | awk '{print tolower($0)}')
 
 case $nocache in
   [yYoO]*)
 	echo "Building in no-cache mode"
-    docker build -t $current_dir --no-cache -f $dockerfile .
+    docker build -t $docker_name --no-cache -f $dockerfile .
     ;;
   *)   
-	docker build -t $current_dir -f $dockerfile . 
+	docker build -t $docker_name -f $dockerfile . 
 	;;
 esac
 
 case $nvidia in
   [yYoO]*)
 	echo "Running with nvidia-docker"
-    nvidia-docker run -ipc=host -it -p $port:5000 $current_dir
+    nvidia-docker run -ipc=host -it -p $port:5000 $docker_name
     ;;
   *)
-	docker run -it -p $port:5000 $current_dir
+	docker run -it -p $port:5000 $docker_name
 	;;
 esac
 
