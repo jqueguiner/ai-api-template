@@ -9,9 +9,9 @@ replace_in_file(){
         fi;
 
         if [ "$file" = "Mac" ]; then
-                sed -i '' "s$replace_char_separator$look_for$replace_char_separator$replace_with/g" $file
+                sed -i '' "s${replace_char_separator}${look_for}${replace_char_separator}${replace_with}${replace_char_separator}g" $file
         else
-                sed -i "s$replace_char_separator$look_for$replace_char_separator$replace_with$replace_char_separatorg/g" $file
+                sed -i "s${replace_char_separator}${look_for}${replace_char_separator}${replace_with}${replace_char_separatorg}g" $file
         fi;
 }
 
