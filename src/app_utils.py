@@ -8,6 +8,10 @@ import numpy as np
 import skimage
 from skimage.filters import gaussian
 
+import zipfile
+from PIL import Image
+import matplotlib.image as mpimg
+import cv2
 
 def blur(image, x0, x1, y0, y1, sigma=1, multichannel=True):
     y0, y1 = min(y0, y1), max(y0, y1)
@@ -62,4 +66,24 @@ def get_model_bin(url, output_path):
 def get_multi_model_bin(model_list):
     for m in model_list:
         thread.start_new_thread(get_model_bin, m)
+
+
+def unzip(path_to_zip_file, directory_to_extract_to='.'):
+    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+        zip_ref.extractall(directory_to_extract_to)
+
+
+def resize_img_in_folder(path, w, h):
+    dirs = os.listdir(path)
+    for item in dirs:
+        if os.path.isfile(path+item):
+            im = Image.open(path+item)
+            f, e = os.path.splitext(path+item)
+            imResize = im.resize((w, h), Image.ANTIALIAS)
+            imResize.save(f + '.jpg', 'JPEG', quality=90)
+
+def resize_img(path, w, h):
+    img = mpimg.imread(path)
+    img = cv2.resize(img, dsize=(w, h))
+    return img
 
